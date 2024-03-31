@@ -1,0 +1,42 @@
+name: gcbm-preprocessing
+on: [push]
+jobs:
+  run:
+    runs-on: [ubuntu-latest]
+    container: ghcr.io/iterative/cml:0-dvc2-base1
+    steps:
+      - uses: actions/checkout@v3
+      - name: cml_run
+        env:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+        
+          # Your ML workflow goes here
+          pip install -r requirements.txt
+          python preprocessing.py
+                
+          echo "## Artifacts generated\n* simulation_inputs.zip\n## Exploratory data analysis" >> report.md
+          
+          echo "![](ecozones.png)" >> report.md
+          cat econames.txt >> report.md
+          echo "![](holdridge.png)" >> report.md
+          cat holdridge.txt >> report.md          
+          echo "![](temperature.png)" >> report.md
+          echo "![](histogram.png)" >> report.md          
+          cat tree.txt >> report.md
+          echo "![](growth.png)" >> report.md       
+                    
+          cml comment create --pr=false report.md
+          
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: simulation_inputs
+          path: |
+            inventory.cpg
+            inventory.dbf
+            inventory.prj
+            inventory.shp
+            inventory.shx
+            Forest-BioClim2.5m_Temperature.tiff
+            Growth_Curves.csv
